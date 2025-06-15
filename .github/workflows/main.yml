@@ -1,0 +1,36 @@
+name: Build for Linux ARM64
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build-arm64:
+    runs-on: ubuntu-latest
+    name: Build on ARM64
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Publish for Linux ARM64
+        run: |
+          dotnet restore
+          dotnet publish -c Release -r linux-arm64 --self-contained true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: balatro-linux-arm64
+          path: ./bin/Release/net8.0/linux-arm64/publish/
